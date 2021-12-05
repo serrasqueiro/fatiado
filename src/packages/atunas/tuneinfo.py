@@ -7,7 +7,7 @@ itunes xml parser
 
 from lxml import etree  # type:ignore # nosec
 
-# pylint: disable=missing-function-docstring
+# pylint: disable=missing-function-docstring, no-self-use
 
 ITS_DESC = {
     "Major Version": (1, "major"),
@@ -27,11 +27,27 @@ class AbstractXML():
     """ Abstract/ generic XML class - reader """
     def __init__(self, data: str=""):
         self._lines = data.splitlines()
+        self._blocks = {}
         self._root = self._set_root(data)
 
     def xml(self):
         """ Returns the root element """
         return self._root
+
+    def block(self, s_key: str):
+        """ Returns the block named 's_key' """
+        return self._blocks[s_key]
+
+    def features(self) -> list:
+        """ Returns an alphabetically ordered list of features,
+        e.g.
+		pers-id=E518D9236DCE5A90
+		tracks=<...>
+		playlists=<...>
+        """
+        blocks = self._blocks
+        res = [f"{key}={blocks[key][2]}" for key in alpha_sort(blocks)]
+        return res
 
     def _set_root(self, data: str):
         pos = data.find("\n")
@@ -44,9 +60,8 @@ class AbstractXML():
 
 
 class TunesXML(AbstractXML):
-    """ itunes XML parser """
-    # pylint: disable=no-self-use
-
+    """ itunes XML parser
+    """
     def __init__(self, fname: str="", data: str=""):
         if fname:
             assert not data
@@ -60,7 +75,7 @@ class TunesXML(AbstractXML):
             data = fdin.read()
         super().__init__(data)
 
-    def _parse(self):
+    def _parse(self) -> bool:
         """ Iterate through iTunes keying """
         plist = self._root[0]
         its = self._convert_its_desc()
@@ -70,12 +85,11 @@ class TunesXML(AbstractXML):
             assert is_ok, f"Wrong tag: '{ala.tag}' ({ala.text})"
             s_key, sample_str, _ = its.get(ala.text)
             assert s_key, f"Uops: {ala.text}"
-            blocks[s_key] = ala
             big = sample_str[0] == "@"
             avalue = "<...>" if big else strvalue_from_element(ala)
-            print(":::", s_key, "SAMPLE:", sample_str, big, "; value:", avalue)
+            blocks[s_key] = (ala, 0 if big else -1, avalue)
         self._blocks = blocks
-        return blocks
+        return True
 
     def _convert_its_desc(self) -> dict:
         """ Converts itunes basic descriptors into a dictionary """
@@ -111,6 +125,11 @@ def from_its_sample(value) -> str:
     if not isinstance(value, str):
         return ""
     return value
+
+
+def alpha_sort(what) -> list:
+    """ Returns an alphabetically sorted list """
+    return sorted(what, key=str.casefold)
 
 
 # Main script
