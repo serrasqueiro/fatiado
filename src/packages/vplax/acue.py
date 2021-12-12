@@ -25,15 +25,29 @@ class ACue(PlayListMeta):
         super().__init__(path)
         info = self._read_playlist(path)
 
+    def file_info(self) -> tuple:
+        """ Returns indication of file ("1", "0", "+"),
+        the filename and the track listing, if only one file.
+        """
+        files = self._metadata["@files"]
+        if not files:
+            return "0", "", []
+        is_one = len(files) == 1
+        if not is_one:
+            return "+", "", []
+        what, cont = files[0]
+        tracks = [(tup[0][1], tup[1]) for tup in cont]
+        return "1", what, tracks
+
     def _read_playlist(self, path:str) -> bool:
         lines = self.read_file(path)
         state = ""
         a_track = None
         info = {
             "REM": {},
+            "@files": [],	# list of files, when there is more than one file
             "@head": {},
             "@tail": None,
-            "@tracks": [],
         }
         for line in lines:
             self._line += 1
@@ -47,10 +61,13 @@ class ACue(PlayListMeta):
             assert key, f"Bad CUE line, {idx}: {line}"
             pstring = KeyString(right)
             rvalue = pstring.lean()
-            #print(":", key, "=", right)
             if key == "FILE":
                 state = key
-                info[key] = rvalue
+                if key not in info:
+                    info[key] = [rvalue]
+                else:
+                    info[key].append(rvalue)
+                info["@files"].append((rvalue[0], []))
                 assert pstring.is_lean(), f"(FILE) String not lean: {right}"
             elif key == "REM":
                 if state:
@@ -65,12 +82,24 @@ class ACue(PlayListMeta):
             elif state:
                 assert pstring.is_lean(), f"({key}) String not lean: {right}"
                 if key == "TRACK":
-                    info["@tracks"].append([rvalue, {}])
-                    a_track = rvalue
+                    track_num = int(rvalue[0])
+                    track_struct = [[track_num, rvalue[0], rvalue[1]], {}]
+                    info["@files"][-1][1].append(track_struct)
+                    a_track = info["@files"][-1][1][-1][1]
+                elif key in "INDEX":
+                    assert a_track, f"Bogus {key}: {key} {right}"
+                    idx_num, a_time = rvalue
+                    if idx_num == "00":
+                        key = "INDEX_00"
+                    else:
+                        assert idx_num == "01"
+                    hang = a_track
+                    assert key not in hang, f"Duplicate key, line {idx}: {key} {right}"
+                    hang[key] = (a_time,)
                 elif key in KEYING_WITHIN_TRACK:
-                    assert a_track, f"Bogus {key}: {key}={right}"
-                    hang = info["@tracks"][-1][1]
-                    hang[key] = rvalue
+                    assert isinstance(a_track, dict), f"Bogus {key}: {key}={right}"
+                    hang = a_track
+                    hang[key] = right
             elif not state:
                 assert pstring.is_lean(), f"({key}) String not lean: {right}"
                 info["@head"][key] = rvalue
