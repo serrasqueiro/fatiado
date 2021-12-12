@@ -5,27 +5,20 @@
 
 # pylint: disable=missing-function-docstring
 
-
-class APlay():
-    """ Abstract class for any playlist """
-    def __init__(self, path=""):
-        self._path = path
-
-    def get_path(self):
-        return self._path
+import vplax.playlistmeta as playlistmeta
 
 
-class AVPL(APlay):
+class AVPL(playlistmeta.APlay):
     """ VUPlayer alternate list """
     def __init__(self, path=""):
         super().__init__(path)
-        self.songs = []
         self._read_playlist(path)
 
     def _read_playlist(self, path:str) -> bool:
-        lines = data = open(path, "r").read().splitlines()
+        lines = self.read_file(path)
         if lines[0].startswith("#"):
             head, tail = lines[0], lines[1:]
+            self._line += 1
         else:
             head, tail = "", lines
         self._add_lines(tail)
@@ -33,6 +26,7 @@ class AVPL(APlay):
 
     def _add_lines(self, alist:list):
         for line in alist:
+            self._line += 1
             items = line.split("\x01")
             idx = 0
             for item in items:
