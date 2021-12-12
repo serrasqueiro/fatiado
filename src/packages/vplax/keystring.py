@@ -14,6 +14,23 @@ class KeyString():
         self._string = astr
         self.strings = self._decouple(astr, separator)
 
+    def original_string(self) -> str:
+        """ Returns the original string """
+        return self._string
+
+    def lean(self) -> list:
+        """ Lean list """
+        return [astr for astr in self.strings if astr is not None]
+
+    def is_lean(self) -> bool:
+        """ Returns True if there are no 'None' attributes in strings
+        E.g. 'abc "def""ghi" xyz', yields:
+		['abc', 'def', None, 'ghi', 'xyz']
+        which is said to be 'not lean' !
+        This function returns False in that case.
+        """
+        return len(self.strings) == len(self.lean())
+
     def _decouple(self, astr, asep) -> list:
         """ Parses string and decouples quotes where necessary """
         #	REM COMMENT "ExactAudioCopy v..."
@@ -21,8 +38,9 @@ class KeyString():
         #	FILE "abc def.flac" WAVE
         idx = 0
         last, items = "", []
-        lastchar = ""
+        achr = ""
         while idx < len(astr):
+            lastchar = achr
             achr = astr[idx]
             idx += 1
             if achr == '"':
@@ -31,13 +49,20 @@ class KeyString():
                     if asep:
                         items.append(None)
                     last = ""
+                elif asep:
+                    if lastchar == "QUOTE":
+                        items.append(None)
                 pos = astr[idx:].find('"')
                 if pos >= 0:
                     items.append(astr[idx:idx+pos])
                     idx += pos + 1
-                    continue
+                    achr = "QUOTE"
+                continue
             if achr == asep:
-                items.append(last)
+                if lastchar == 'QUOTE' and not last:
+                    pass
+                else:
+                    items.append(last)
                 last = ""
                 continue
             last += achr
