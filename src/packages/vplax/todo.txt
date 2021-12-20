@@ -22,3 +22,9 @@ CUE
 ('02', {'TITLE': 'Bloody', 'PERFORMER': 'Sup', 'INDEX': ('05:34:23',)})
 is: (CUE0=None, CUE1=1), (CUE0=None, CUE1=335)
 because 5*34 + 23 + 1 = 335
+
+
+track_number, song = tracks[1]
+index = song["INDEX"][0][:-len(":xx")]
+mmss = index
+secs = sum(int(x) * 60 ** i for i, x in enumerate(reversed(mmss.split(':'))))
