@@ -1,0 +1,24 @@
+
+
+fname = 'cuers/list.vpl'
+
+import vplax.avpl; importlib.reload(vplax.avpl)
+import vplax.acue; importlib.reload(vplax.acue)
+
+vpl = vplax.avpl.AVPL(fname)
+print(vpl.songs)
+for item in vpl.songs: print(';'.join(sorted(item)), item["NAME"], item["@path"])
+for item in vpl.songs: print(f'CUE0={item.get("CUE0")}, CUE1={item.get("CUE1")}')
+
+acue = vplax.acue.ACue(cuename)
+keying = sorted(acue.information().keys())
+#	['@files', '@head', '@tail', 'FILE', 'REM']
+_, what, tracks = cue.file_info()
+for item in tracks: print(item, end="\n\n")
+
+
+CUE
++++
+('02', {'TITLE': 'Bloody', 'PERFORMER': 'Sup', 'INDEX': ('05:34:23',)})
+is: (CUE0=None, CUE1=1), (CUE0=None, CUE1=335)
+because 5*34 + 23 + 1 = 335
