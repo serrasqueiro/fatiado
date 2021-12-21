@@ -58,5 +58,16 @@ class PlayListMeta(APlay):
         return True, (key, right)
 
 
+def convert_hhmmss(astr:str) -> int:
+    """ Converts HH:MM:SS into seconds, or MM:SS to seconds.
+    """
+    if astr:
+        mmss = astr
+    else:
+        mmss = "0"
+    secs = sum(int(x) * 60 ** i for i, x in enumerate(reversed(mmss.split(':'))))
+    return secs
+
+
 if __name__ == "__main__":
     print("Import me!")

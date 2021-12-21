@@ -6,7 +6,8 @@ CUE files have 'QUOTED_STR KEY' or 'KEY QUOTED_STR'
 This module helps both cases.
 """
 
-# pylint: disable=missing-function-docstring
+# pylint: disable=missing-function-docstring, no-self-use
+
 
 class KeyString():
     """ KeyString basic class """
