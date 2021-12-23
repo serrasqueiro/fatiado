@@ -92,6 +92,7 @@ class Content():
         if self._sheet is None:
             return False
         idx = 0
+        self._init_parse()
         for row in self._sheet.rows:
             idx += 1
             if idx < self._start_row:
@@ -99,6 +100,10 @@ class Content():
             alist = [Textual(item) for item in row]
             self.rows.append(alist)
         return True
+
+    def _init_parse(self):
+        self.rows = []
+
 
 class Book():
     """ Workbook class """
@@ -143,12 +148,22 @@ class Book():
             self.contents.append(Content(sht, sheetname, end_row+1))
         return True
 
-    def parse(self, idx1:int) -> bool:
+    def parse(self, idx1:int=0) -> bool:
         """ Parse sheet with index 'idx1'
         """
+        if len(self.headings) <= 1:
+            self.parse_headings()
         if idx1 < 0:
             return False
-        return self.contents[idx1].parse()
+        if idx1 > 0:
+            return self.contents[idx1].parse()
+        all_ok = True
+        if idx1 == 0:
+            conts = self.contents[1:]
+            for cont in conts:
+                if not cont.parse():
+                    all_ok = False
+        return all_ok
 
     def _load_book(self) -> str:
         self._wbk = openpyxl.load_workbook(self._path, read_only=True)

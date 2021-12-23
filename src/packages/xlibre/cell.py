@@ -20,6 +20,11 @@ class Textual():
     def empty(self) -> bool:
         return self._cell is None
 
+    def datatype(self) -> str:
+        if self._cell is None:
+            return ""
+        return self._cell.data_type
+
     def __str__(self) -> str:
         return self.string
 
