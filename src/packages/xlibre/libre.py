@@ -23,6 +23,7 @@ class Heading(GeneralTabular):
     """ Sheet heading """
     def __init__(self, sht=None):
         self._sheet = sht
+        self._first_column = -1
         self._headings = {
             "@lines": [],
             "@columns": [],
@@ -74,6 +75,7 @@ class Heading(GeneralTabular):
         for x_col in sorted(cols):
             self._headings["@columns"].append((x_col, cols[x_col]))
         self._my_hash(self._headings)
+        self._first_column = first_col
         return True
 
 
@@ -87,6 +89,12 @@ class Content():
 
     def start_row(self) -> int:
         return self._start_row
+
+    def max_row(self) -> int:
+        return self._sheet.max_row
+
+    def max_column(self) -> int:
+        return self._sheet.max_column
 
     def parse(self) -> bool:
         if self._sheet is None:
@@ -107,10 +115,11 @@ class Content():
 
 class Book():
     """ Workbook class """
-    def __init__(self, path=""):
+    def __init__(self, path="", read_only=True):
         self._path, self._wbk = path, None
+        self._read_only = read_only
         if path:
-            self._load_book()
+            self._load_book(read_only=read_only)
         self.headings = [Heading()]
         self.contents = [Content(desc=path)]
 
@@ -165,8 +174,14 @@ class Book():
                     all_ok = False
         return all_ok
 
-    def _load_book(self) -> str:
-        self._wbk = openpyxl.load_workbook(self._path, read_only=True)
+    def _load_book(self, **kwargs) -> str:
+        #self._wbk = openpyxl.load_workbook(self._path, **kwargs)
+        self._wbk = wrapper_load(self._path, **kwargs)
+
+
+def wrapper_load(path:str, **kwargs):
+    #print("wrapper_load():", path, "; read-only:", kwargs["read_only"])
+    return openpyxl.load_workbook(path, **kwargs)
 
 
 if __name__ == "__main__":
