@@ -8,12 +8,28 @@
 import datetime
 
 
-class Textual():
+class CellFormat():
+    """ Generic cell formating """
+    _default_show_iso = True
+
+    def __init__(self):
+        self._show_iso = CellFormat._default_show_iso
+
+    def set_default_iso(self, is_iso:True):
+        self._default_show_iso = is_iso
+        assert is_iso in (True, False)
+
+    def show_iso_date(self) -> bool:
+        return self._show_iso
+
+
+class Textual(CellFormat):
     """ Textual cell """
     # pylint: disable=line-too-long
 
     def __init__(self, cell):
         # pylint: disable=line-too-long
+        super().__init__()
         self._cell = cell
         self.value = None
         self.string = ""
@@ -53,7 +69,7 @@ class Textual():
             if isinstance(value, datetime.time):
                 t_format = "%H:%M:%S"
             else:
-                t_format = "%Y-%d-%m"
+                t_format = "%Y-%m-%d" if self._show_iso else "%Y-%d-%m"
             try:
                 text = value.strftime(t_format)
             except AttributeError:
