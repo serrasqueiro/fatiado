@@ -49,7 +49,7 @@ class Contx():
             elem = [None if elem.is_null() else str(elem) for elem in row]
             data.append(elem)
         astr = json.dumps(data, sort_keys=True, ensure_ascii=False, indent=2)
-        return astr
+        return astr + "\n"
 
 
 class Simplex(list):
