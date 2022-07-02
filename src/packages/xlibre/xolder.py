@@ -8,10 +8,19 @@
 import xlrd
 
 
-class ABook():
+class BasicObj():
+    """ Basic object with a name, abstract class """
+    def __init__(self, name):
+        self._aname = name
+
+    def get_aname(self):
+        return self._aname
+
+
+class ABook(BasicObj):
     """ Old Excel book content, wrapper """
     def __init__(self, name=""):
-        self._aname = name
+        super().__init__(name)
         self._workbook = None
         self.ibook = None
 
@@ -19,7 +28,12 @@ class ABook():
         return "xls"
 
     def load(self, fname:str) -> bool:
-        book = xlrd.open_workbook(fname)
+        try:
+            book = xlrd.open_workbook(fname)
+        except FileNotFoundError:
+            book = None
+        if book is None:
+            return False
         self._workbook = book
         self.ibook = OldBook(book, self._aname)
         return True
@@ -29,16 +43,13 @@ class ABook():
         return self._workbook
 
 
-class OldBook():
+class OldBook(BasicObj):
     """ Old Excel book content, wrapper """
     def __init__(self, book=None, name=""):
-        self._aname = name
+        super().__init__(name)
         self._skel = book
         self.current = None	# Current sheet
         self._sheet_list = book._sheet_list
-
-    def get_aname(self):
-        return self._aname
 
     def first(self):
         return self._get_by_index(0)
@@ -53,17 +64,19 @@ class OldBook():
         return sht
 
 
-class OldSheet():
+class OldSheet(BasicObj):
     """ Old xlrd excel Sheet """
     def __init__(self, sht, tup=None):
         self._sheet = sht
         self._skel = None
         self._lines = []
+        name = ""
         if tup is None:
             self._original_sheet = None
         else:
             book, position, name, number = tup
             self._original_sheet = xlrd.sheet.Sheet(book, position, name, number)
+        super().__init__(name)
         self._parse_lines()
 
     def content(self):
