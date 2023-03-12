@@ -1,4 +1,4 @@
-# (c)2022  Henrique Moreira
+# (c)2022, 2023  Henrique Moreira
 
 """ xolder -- Old Excel (xls) reader; hopefully you should not use this!
 """
@@ -27,7 +27,10 @@ class ABook(BasicObj):
     def get_book_type(self):
         return "xls"
 
-    def load(self, fname:str) -> bool:
+    def load(self, fname:str, debug:int=0) -> bool:
+        """ Load xls book """
+        if debug > 0:
+            print("load():", fname)
         try:
             book = xlrd.open_workbook(fname)
         except FileNotFoundError:

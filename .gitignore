@@ -1,5 +1,6 @@
 # Byte-compiled / optimized
 __pycache__/
+*.pyc
 
 # C extensions
 *.so
@@ -15,3 +16,6 @@ venv/
 
 # Pyre type checker
 .pyre/
+
+# Others
+todo.txt
